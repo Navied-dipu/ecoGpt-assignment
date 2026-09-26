@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 
 import { cn } from "@/lib/utils";
+import { AI_MODELS } from "@/lib/models";
 
 export const CHROME_STORE_URL = "https://chromewebstore.google.com/";
 
@@ -23,13 +24,10 @@ const STAT_ITEMS: readonly StatItem[] = [
   { id: "pricing", label: "Free to Start", value: null },
 ];
 
-const CHAT_MODELS = [
-  { name: "GPT-4", tone: "from-emerald-400 to-teal-500" },
-  { name: "Gemini", tone: "from-blue-400 to-indigo-500" },
-  { name: "Claude", tone: "from-amber-400 to-orange-500" },
-  { name: "Mistral", tone: "from-rose-400 to-pink-500" },
-  { name: "LLaMA", tone: "from-violet-400 to-purple-500" },
-] as const;
+const CHAT_MODELS = AI_MODELS.map((model) => ({
+  name: model.name,
+  tone: model.accent.gradient,
+}));
 
 const MESSAGES = [
   {

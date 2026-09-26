@@ -34,7 +34,9 @@ the responsive navigation, the chat UI, and the API routes that talk to the Echo
    row, and a floating browser mockup that previews the multi-model chat UI.
 9. **Features** → `src/components/landing/FeaturesSection.tsx` renders the six product
    cards in a 2×3 / 3×2 glass grid, staggered into view on scroll with hover lift and glow.
-10. **Planned next steps** — a chat interface that posts a question to a `/api/chat` route,
+10. **Models** → `src/components/landing/AIModelsSection.tsx` renders the six supported
+    models with per-model accent colors, plus an infinite logo ticker beneath the grid.
+11. **Planned next steps** — a chat interface that posts a question to a `/api/chat` route,
     which forwards it to the EchoGPT model and streams the answer back.
 
 ---
@@ -61,16 +63,20 @@ the responsive navigation, the chat UI, and the API routes that talk to the Echo
 ├── src/
 │   ├── app/                       # App Router — the app root
 │   │   ├── layout.tsx             # Root layout: fonts, ThemeProvider, metadata
-│   │   ├── page.tsx               # Landing page: Navbar + Hero + Features + CTA
+│   │   ├── page.tsx               # Landing page: Navbar + Hero + Features + Models + CTA
 │   │   ├── globals.css            # Tailwind entry, theme variables, no-JS fallback
 │   │   └── fonts/                 # Self-hosted Geist .woff files
 │   ├── components/
 │   │   ├── landing/
 │   │   │   ├── Navbar.tsx         # Responsive glassmorphism navbar (client)
 │   │   │   ├── HeroSection.tsx    # Animated hero + browser mockup (client)
-│   │   │   └── FeaturesSection.tsx# 6 glass feature cards, staggered reveal (client)
+│   │   │   ├── FeaturesSection.tsx# 6 glass feature cards, staggered reveal (client)
+│   │   │   └── AIModelsSection.tsx# 6 model cards + infinite logo ticker (client)
 │   │   └── theme-provider.tsx     # next-themes wrapper (client)
 │   └── lib/
+│       ├── features.ts            # Feature card data
+│       ├── models.ts              # AI model data + per-model accent classes
+│       ├── motion.ts              # Shared Framer Motion reveal variants
 │       └── utils.ts               # cn() class-name helper
 ├── tailwind.config.js             # Dark mode, fonts, color tokens, animation keyframes
 ├── tsconfig.json                  # Path alias @/* -> ./src/*
@@ -192,7 +198,7 @@ never invisible when JavaScript is slow or disabled; every animation is disabled
   fade in (CSS `group-hover`, so the effect survives without JS);
 - reveals the cards bottom-to-top with `whileInView` and a `staggerChildren: 0.09` parent
   variant, running once;
-- skips the reveal entirely when the user prefers reduced motion.
+- drops the slide and animates opacity only when the user prefers reduced motion.
 
 Because the reveal relies on `IntersectionObserver`, the cards are given a `motion-reveal`
 class, and `src/app/globals.css` contains an `@media (scripting: none)` rule that forces
@@ -200,12 +206,36 @@ those cards visible when scripting is disabled.
 
 ---
 
-## 10. Known issues / next steps
+## 10. The models section in detail
+
+`src/components/landing/AIModelsSection.tsx` is a client component that:
+
+- labels itself "SUPPORTED MODELS" between two gradient rules, followed by the title
+  "All your favorite AIs, one interface" and the subtitle;
+- renders GPT-4o, Gemini Pro, Claude 3.5, Llama 3, Mistral and Grok from `AI_MODELS` in
+  `src/lib/models.ts`, one column on mobile, two on `sm`, three on `lg`;
+- gives every card a colored letter avatar, the model name and provider, a capability tag,
+  and a gradient top-border accent in that model's color;
+- scales the card up 2% and adds a colored glow shadow on hover (`whileHover` for the
+  transform, `hover:shadow-<color>/30` for the glow);
+- scrolls the model ticker forever with the `marquee` keyframes: the list is rendered twice
+  inside a `w-max` track and translated `-50%`, with the duplicate copy `aria-hidden` so
+  screen readers hear it once. The marquee pauses on hover and is disabled under
+  `prefers-reduced-motion`;
+- fades the edge of the ticker with a `mask-image` gradient.
+
+Per-model colors live in `src/lib/models.ts` as literal Tailwind classes. They must stay
+literal strings — Tailwind cannot see classes built at runtime, and `group-hover:` variants
+are skipped when the `group` marker class is not in the same file.
+
+---
+
+## 11. Known issues / next steps
 
 - **Nav targets are not built yet.** The navbar links to `/features`, `/ai-models`,
   `/pricing`, `/faq` and `/get-started`; those routes return 404 until the pages are
-  created under `src/app/`. The landing page's `#features` section is an in-page anchor,
-  not that route.
+  created under `src/app/`. The landing page's `#features` and `#ai-models` sections are
+  in-page anchors, not those routes.
 - **Chrome extension URL is a placeholder**: `CHROME_STORE_URL` in
   `src/components/landing/HeroSection.tsx` points at the store root — replace it with the
   real listing URL before launch.
@@ -213,3 +243,6 @@ those cards visible when scripting is disabled.
   copy.
 - `next lint` prompts for setup on a machine without a resolved ESLint install — run
   `npm install` first, or set `CI=1` for non-interactive runs.
+- `next build` occasionally crashes its worker on this machine (exit code `3221225477`)
+  when it runs while `next start`/`next dev` still holds `.next`. Stop the dev server and
+  re-run the build.

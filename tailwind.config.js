@@ -65,6 +65,10 @@ module.exports = {
           "0%, 100%": { transform: "translate3d(0, 0, 0)" },
           "50%": { transform: "translate3d(24px, 18px, 0)" },
         },
+        marquee: {
+          "0%": { transform: "translate3d(0, 0, 0)" },
+          "100%": { transform: "translate3d(-50%, 0, 0)" },
+        },
         shimmer: {
           "0%": { backgroundPosition: "0% 50%" },
           "100%": { backgroundPosition: "200% 50%" },
@@ -79,6 +83,7 @@ module.exports = {
         "gradient-pan": "gradient-pan 14s ease infinite",
         float: "float 9s ease-in-out infinite",
         "drift-x": "drift-x 13s ease-in-out infinite",
+        marquee: "marquee 38s linear infinite",
         shimmer: "shimmer 3.5s linear infinite",
         sheen: "sheen 3.2s ease-in-out infinite",
       },

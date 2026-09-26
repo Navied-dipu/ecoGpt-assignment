@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AIModelsSection } from "@/components/landing/AIModelsSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { Navbar } from "@/components/landing/Navbar";
@@ -12,6 +13,7 @@ export default function Home() {
       <main>
         <HeroSection />
         <FeaturesSection />
+        <AIModelsSection />
 
         <section className="border-t border-border/70 px-4 py-20 sm:px-6 lg:px-8">
           <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-6 text-center">
