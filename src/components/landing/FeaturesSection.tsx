@@ -16,7 +16,7 @@ export function FeaturesSection() {
     <section
       id="features"
       aria-labelledby="features-title"
-      className="relative scroll-mt-20 border-t border-border/70 bg-background px-4 py-20 sm:px-6 sm:py-28 lg:px-8"
+      className="relative scroll-mt-20 px-4 py-20 sm:px-6 sm:py-28 lg:px-8"
     >
       <div className="mx-auto w-full max-w-6xl">
         <div className="mx-auto max-w-2xl text-center">

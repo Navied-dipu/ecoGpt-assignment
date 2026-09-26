@@ -9,6 +9,7 @@ import {
   useMotionValueEvent,
   useScroll,
 } from "framer-motion";
+import type { MotionValue } from "framer-motion";
 import { useTheme } from "next-themes";
 
 import { cn } from "@/lib/utils";
@@ -19,18 +20,54 @@ export interface NavLink {
 }
 
 export const NAV_LINKS: readonly NavLink[] = [
-  { label: "Home", href: "/" },
-  { label: "Features", href: "/features" },
-  { label: "AI Models", href: "/ai-models" },
+  { label: "Home", href: "/#hero" },
+  { label: "Features", href: "/#features" },
+  { label: "AI Models", href: "/#models" },
   { label: "Pricing", href: "/pricing" },
   { label: "FAQ", href: "/faq" },
 ];
 
 const SCROLL_THRESHOLD = 24;
+const SCROLL_OFFSET = 140;
+
+function hashOf(href: string): string | null {
+  const index = href.indexOf("#");
+  return index === -1 ? null : href.slice(index + 1);
+}
+
+const SECTION_HASHES: readonly string[] = NAV_LINKS.map((link) =>
+  hashOf(link.href),
+).filter((hash): hash is string => hash !== null);
 
 function isActivePath(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function useActiveHash(scrollY: MotionValue<number>) {
+  const [activeHash, setActiveHash] = useState<string | null>(
+    SECTION_HASHES[0] ?? null,
+  );
+
+  useMotionValueEvent(scrollY, "change", () => {
+    let current: string | null = null;
+
+    for (const hash of SECTION_HASHES) {
+      const section = document.getElementById(hash);
+      if (!section) continue;
+      if (section.getBoundingClientRect().top - SCROLL_OFFSET <= 0) {
+        current = hash;
+      }
+    }
+
+    if (current === null && window.scrollY <= SCROLL_OFFSET) {
+      current = SECTION_HASHES[0] ?? null;
+    }
+
+    setActiveHash(current);
+  });
+
+  return activeHash;
 }
 
 function LogoMark({ className }: { className?: string }) {
@@ -146,6 +183,7 @@ export function Navbar() {
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const activeHash = useActiveHash(scrollY);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setScrolled(latest > SCROLL_THRESHOLD);
@@ -208,13 +246,16 @@ export function Navbar() {
 
         <ul className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex">
           {NAV_LINKS.map((link) => {
-            const active = isActivePath(pathname, link.href);
+            const hash = hashOf(link.href);
+            const active = hash
+              ? hash === activeHash
+              : isActivePath(pathname, link.href);
 
             return (
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  aria-current={active ? "page" : undefined}
+                  aria-current={active ? (hash ? "location" : "page") : undefined}
                   className={cn(
                     "relative rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40",
                     active
@@ -287,7 +328,10 @@ export function Navbar() {
           >
             <ul className="flex flex-col gap-1 px-4 pb-6 pt-3 sm:px-6">
               {NAV_LINKS.map((link, index) => {
-                const active = isActivePath(pathname, link.href);
+                const hash = hashOf(link.href);
+                const active = hash
+                  ? hash === activeHash
+                  : isActivePath(pathname, link.href);
 
                 return (
                   <motion.li
@@ -303,7 +347,9 @@ export function Navbar() {
                     <Link
                       href={link.href}
                       onClick={closeMenu}
-                      aria-current={active ? "page" : undefined}
+                      aria-current={
+                        active ? (hash ? "location" : "page") : undefined
+                      }
                       className={cn(
                         "block rounded-lg px-3 py-3 text-base font-medium transition-colors",
                         active

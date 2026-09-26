@@ -26,17 +26,21 @@ the responsive navigation, the chat UI, and the API routes that talk to the Echo
    the CSS variables for light/dark values.
 6. **Styling** → Tailwind utility classes are compiled from the globs in
    `tailwind.config.js`; colors come from the CSS variables in `src/app/globals.css`.
-7. **Navigation** → `src/components/landing/Navbar.tsx` renders a fixed, blurred navbar
-   that shrinks and gains a shadow once the page is scrolled, highlights the active route
-   with an animated underline, and collapses into an animated hamburger menu on mobile.
-8. **Hero** → `src/components/landing/HeroSection.tsx` renders the animated gradient
+7. **Page shell** → `src/app/page.tsx` composes the navbar (outside `<main>`), the four
+   sections in order, a gradient divider between each, and a dot-grid page background.
+   Every section carries an anchor id: `#hero`, `#features` and `#models`.
+8. **Navigation** → `src/components/landing/Navbar.tsx` renders a fixed, blurred navbar
+   that shrinks and gains a shadow once the page is scrolled, highlights the section
+   currently in view with an animated underline, and collapses into an animated hamburger
+   menu on mobile.
+9. **Hero** → `src/components/landing/HeroSection.tsx` renders the animated gradient
    background, floating orbs, the shimmer badge, the headline and CTAs, the count-up stats
    row, and a floating browser mockup that previews the multi-model chat UI.
-9. **Features** → `src/components/landing/FeaturesSection.tsx` renders the six product
-   cards in a 2×3 / 3×2 glass grid, staggered into view on scroll with hover lift and glow.
-10. **Models** → `src/components/landing/AIModelsSection.tsx` renders the six supported
+10. **Features** → `src/components/landing/FeaturesSection.tsx` renders the six product
+    cards in a 2×3 / 3×2 glass grid, staggered into view on scroll with hover lift and glow.
+11. **Models** → `src/components/landing/AIModelsSection.tsx` renders the six supported
     models with per-model accent colors, plus an infinite logo ticker beneath the grid.
-11. **Planned next steps** — a chat interface that posts a question to a `/api/chat` route,
+12. **Planned next steps** — a chat interface that posts a question to a `/api/chat` route,
     which forwards it to the EchoGPT model and streams the answer back.
 
 ---
@@ -233,9 +237,10 @@ are skipped when the `group` marker class is not in the same file.
 ## 11. Known issues / next steps
 
 - **Nav targets are not built yet.** The navbar links to `/features`, `/ai-models`,
-  `/pricing`, `/faq` and `/get-started`; those routes return 404 until the pages are
-  created under `src/app/`. The landing page's `#features` and `#ai-models` sections are
-  in-page anchors, not those routes.
+  `/pricing` and `/faq`; those routes return 404 until the pages are created under
+  `src/app/`. "Features" and "AI Models" point at the in-page anchors `#features` and
+  `#models`; the "Get Started" buttons still link to `/get-started`, which needs a real
+  page.
 - **Chrome extension URL is a placeholder**: `CHROME_STORE_URL` in
   `src/components/landing/HeroSection.tsx` points at the store root — replace it with the
   real listing URL before launch.
