@@ -32,8 +32,10 @@ the responsive navigation, the chat UI, and the API routes that talk to the Echo
 8. **Hero** → `src/components/landing/HeroSection.tsx` renders the animated gradient
    background, floating orbs, the shimmer badge, the headline and CTAs, the count-up stats
    row, and a floating browser mockup that previews the multi-model chat UI.
-9. **Planned next steps** — a chat interface that posts a question to a `/api/chat` route,
-   which forwards it to the EchoGPT model and streams the answer back.
+9. **Features** → `src/components/landing/FeaturesSection.tsx` renders the six product
+   cards in a 2×3 / 3×2 glass grid, staggered into view on scroll with hover lift and glow.
+10. **Planned next steps** — a chat interface that posts a question to a `/api/chat` route,
+    which forwards it to the EchoGPT model and streams the answer back.
 
 ---
 
@@ -59,13 +61,14 @@ the responsive navigation, the chat UI, and the API routes that talk to the Echo
 ├── src/
 │   ├── app/                       # App Router — the app root
 │   │   ├── layout.tsx             # Root layout: fonts, ThemeProvider, metadata
-│   │   ├── page.tsx               # Landing page: Navbar + HeroSection + features strip
-│   │   ├── globals.css            # Tailwind entry + light/dark CSS variables
+│   │   ├── page.tsx               # Landing page: Navbar + Hero + Features + CTA
+│   │   ├── globals.css            # Tailwind entry, theme variables, no-JS fallback
 │   │   └── fonts/                 # Self-hosted Geist .woff files
 │   ├── components/
 │   │   ├── landing/
 │   │   │   ├── Navbar.tsx         # Responsive glassmorphism navbar (client)
-│   │   │   └── HeroSection.tsx    # Animated hero + browser mockup (client)
+│   │   │   ├── HeroSection.tsx    # Animated hero + browser mockup (client)
+│   │   │   └── FeaturesSection.tsx# 6 glass feature cards, staggered reveal (client)
 │   │   └── theme-provider.tsx     # next-themes wrapper (client)
 │   └── lib/
 │       └── utils.ts               # cn() class-name helper
@@ -168,7 +171,7 @@ Path alias: `@/components/landing/Navbar` resolves to `src/components/landing/Na
   the row scrolls into view, with the final values present in the server HTML;
 - draws a browser mockup entirely with divs (traffic lights, URL pill, model sidebar,
   chat bubbles, composer) that floats up and down forever;
-- bounces the scroll-indicator arrow and links it to the `#features` strip.
+- bounces the scroll-indicator arrow and links it to the `#features` section.
 
 Entrance animations are CSS (`animate-rise-in`) rather than Framer Motion so the hero is
 never invisible when JavaScript is slow or disabled; every animation is disabled under
@@ -176,12 +179,33 @@ never invisible when JavaScript is slow or disabled; every animation is disabled
 
 ---
 
-## 9. Known issues / next steps
+## 9. The features section in detail
+
+`src/components/landing/FeaturesSection.tsx` is a client component that:
+
+- labels itself "FEATURES" between two gradient rules, followed by the title
+  "Everything you need in one AI platform" and a one-line subtitle;
+- lays the six cards out as 2×3 on mobile and 3×2 from `lg` up;
+- gives every card a glass surface (`bg-white/60 dark:bg-white/5 backdrop-blur-md`) and an
+  icon in a per-card gradient rounded square;
+- lifts the card 6px on hover with `whileHover` while a gradient ring plus a blurred glow
+  fade in (CSS `group-hover`, so the effect survives without JS);
+- reveals the cards bottom-to-top with `whileInView` and a `staggerChildren: 0.09` parent
+  variant, running once;
+- skips the reveal entirely when the user prefers reduced motion.
+
+Because the reveal relies on `IntersectionObserver`, the cards are given a `motion-reveal`
+class, and `src/app/globals.css` contains an `@media (scripting: none)` rule that forces
+those cards visible when scripting is disabled.
+
+---
+
+## 10. Known issues / next steps
 
 - **Nav targets are not built yet.** The navbar links to `/features`, `/ai-models`,
   `/pricing`, `/faq` and `/get-started`; those routes return 404 until the pages are
-  created under `src/app/`. The `#features` section on the landing page is an in-page
-  anchor, not that route.
+  created under `src/app/`. The landing page's `#features` section is an in-page anchor,
+  not that route.
 - **Chrome extension URL is a placeholder**: `CHROME_STORE_URL` in
   `src/components/landing/HeroSection.tsx` points at the store root — replace it with the
   real listing URL before launch.

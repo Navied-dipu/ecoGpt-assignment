@@ -53,3 +53,10 @@
     text-wrap: balance;
   }
 }
+
+@media (scripting: none) {
+  .motion-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
