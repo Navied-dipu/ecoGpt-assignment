@@ -29,7 +29,10 @@ the responsive navigation, the chat UI, and the API routes that talk to the Echo
 7. **Navigation** → `src/components/landing/Navbar.tsx` renders a fixed, blurred navbar
    that shrinks and gains a shadow once the page is scrolled, highlights the active route
    with an animated underline, and collapses into an animated hamburger menu on mobile.
-8. **Planned next steps** — a chat interface that posts a question to a `/api/chat` route,
+8. **Hero** → `src/components/landing/HeroSection.tsx` renders the animated gradient
+   background, floating orbs, the shimmer badge, the headline and CTAs, the count-up stats
+   row, and a floating browser mockup that previews the multi-model chat UI.
+9. **Planned next steps** — a chat interface that posts a question to a `/api/chat` route,
    which forwards it to the EchoGPT model and streams the answer back.
 
 ---
@@ -56,15 +59,17 @@ the responsive navigation, the chat UI, and the API routes that talk to the Echo
 ├── src/
 │   ├── app/                       # App Router — the app root
 │   │   ├── layout.tsx             # Root layout: fonts, ThemeProvider, metadata
-│   │   ├── page.tsx               # Landing page (route "/")
+│   │   ├── page.tsx               # Landing page: Navbar + HeroSection + features strip
 │   │   ├── globals.css            # Tailwind entry + light/dark CSS variables
 │   │   └── fonts/                 # Self-hosted Geist .woff files
 │   ├── components/
-│   │   ├── landing/Navbar.tsx     # Responsive glassmorphism navbar (client)
+│   │   ├── landing/
+│   │   │   ├── Navbar.tsx         # Responsive glassmorphism navbar (client)
+│   │   │   └── HeroSection.tsx    # Animated hero + browser mockup (client)
 │   │   └── theme-provider.tsx     # next-themes wrapper (client)
 │   └── lib/
 │       └── utils.ts               # cn() class-name helper
-├── tailwind.config.js             # Dark mode strategy, font families, color tokens
+├── tailwind.config.js             # Dark mode, fonts, color tokens, animation keyframes
 ├── tsconfig.json                  # Path alias @/* -> ./src/*
 ├── next.config.mjs
 └── package.json
@@ -88,8 +93,8 @@ Path alias: `@/components/landing/Navbar` resolves to `src/components/landing/Na
    npm run dev
    ```
 
-3. **Edit a page or component** — `src/app/page.tsx` for content,
-   `src/components/landing/Navbar.tsx` for navigation; the browser updates instantly.
+3. **Edit a page or component** — `src/app/page.tsx` for page composition,
+   `src/components/landing/` for the navbar and hero; the browser updates instantly.
 
 4. **Verify before you commit** (required by `AGENTS.md`)
 
@@ -150,11 +155,36 @@ Path alias: `@/components/landing/Navbar` resolves to `src/components/landing/Na
 
 ---
 
-## 8. Known issues / next steps
+## 8. The hero in detail
+
+`src/components/landing/HeroSection.tsx` is a client component that:
+
+- paints an animated purple → blue → cyan gradient plus three blurred orbs that float
+  (`gradient-pan`, `float`, `drift-x` keyframes in `tailwind.config.js`);
+- renders the "✨ Multi-AI Chat Platform" badge with a sweeping sheen highlight;
+- stacks headline, subheadline, the two CTAs ("Try Web App Free" filled gradient,
+  "Add to Chrome" outlined with an inline Chrome logo), and the stats row on mobile;
+- counts the stats up (`10,000+ Users · 5+ AI Models · 4.9★ Rating · Free to Start`) once
+  the row scrolls into view, with the final values present in the server HTML;
+- draws a browser mockup entirely with divs (traffic lights, URL pill, model sidebar,
+  chat bubbles, composer) that floats up and down forever;
+- bounces the scroll-indicator arrow and links it to the `#features` strip.
+
+Entrance animations are CSS (`animate-rise-in`) rather than Framer Motion so the hero is
+never invisible when JavaScript is slow or disabled; every animation is disabled under
+`prefers-reduced-motion` via `motion-reduce:animate-none` / `useReducedMotion`.
+
+---
+
+## 9. Known issues / next steps
 
 - **Nav targets are not built yet.** The navbar links to `/features`, `/ai-models`,
   `/pricing`, `/faq` and `/get-started`; those routes return 404 until the pages are
-  created under `src/app/`.
+  created under `src/app/`. The `#features` section on the landing page is an in-page
+  anchor, not that route.
+- **Chrome extension URL is a placeholder**: `CHROME_STORE_URL` in
+  `src/components/landing/HeroSection.tsx` points at the store root — replace it with the
+  real listing URL before launch.
 - **Placeholder metadata**: `layout.tsx` description should be finalized with the product
   copy.
 - `next lint` prompts for setup on a machine without a resolved ESLint install — run
