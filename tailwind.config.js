@@ -2,12 +2,26 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    "./app/**/*.{js,jsx,mdx}",
-    "./components/**/*.{js,jsx,mdx}",
-    "./lib/**/*.{js,jsx,mdx}",
+    "./src/app/**/*.{js,jsx,ts,tsx,mdx}",
+    "./src/components/**/*.{js,jsx,ts,tsx,mdx}",
+    "./src/lib/**/*.{js,jsx,ts,tsx,mdx}",
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          "var(--font-geist-sans)",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
+        mono: [
+          "var(--font-geist-mono)",
+          "ui-monospace",
+          "SFMono-Regular",
+          "monospace",
+        ],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
@@ -28,6 +42,11 @@ module.exports = {
           foreground: "var(--accent-foreground)",
         },
         border: "var(--border)",
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
     },
   },
