@@ -23,8 +23,8 @@ export const NAV_LINKS: readonly NavLink[] = [
   { label: "Home", href: "/#hero" },
   { label: "Features", href: "/#features" },
   { label: "AI Models", href: "/#models" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "FAQ", href: "/faq" },
+  { label: "Pricing", href: "/#pricing" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 const SCROLL_THRESHOLD = 24;
@@ -280,7 +280,7 @@ export function Navbar() {
         <div className="flex shrink-0 items-center gap-2">
           <ThemeToggle />
           <Link
-            href="/get-started"
+            href="/#pricing"
             className="hidden h-10 items-center justify-center rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 sm:inline-flex"
           >
             Get Started
@@ -369,7 +369,7 @@ export function Navbar() {
                 className="pt-2"
               >
                 <Link
-                  href="/get-started"
+                  href="/#pricing"
                   onClick={closeMenu}
                   className="flex h-11 w-full items-center justify-center rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
                 >

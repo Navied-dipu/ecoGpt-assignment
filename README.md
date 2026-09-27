@@ -26,9 +26,10 @@ the responsive navigation, the chat UI, and the API routes that talk to the Echo
    the CSS variables for light/dark values.
 6. **Styling** → Tailwind utility classes are compiled from the globs in
    `tailwind.config.js`; colors come from the CSS variables in `src/app/globals.css`.
-7. **Page shell** → `src/app/page.tsx` composes the navbar (outside `<main>`), the four
-   sections in order, a gradient divider between each, and a dot-grid page background.
-   Every section carries an anchor id: `#hero`, `#features` and `#models`.
+7. **Page shell** → `src/app/page.tsx` composes the navbar (outside `<main>`), the nine
+   sections in order, a gradient divider between each, the footer, and a dot-grid page
+   background. Every section carries an anchor id: `#hero`, `#features`, `#models`,
+   `#preview`, `#why`, `#pricing`, `#faq`, `#testimonials`.
 8. **Navigation** → `src/components/landing/Navbar.tsx` renders a fixed, blurred navbar
    that shrinks and gains a shadow once the page is scrolled, highlights the section
    currently in view with an animated underline, and collapses into an animated hamburger
@@ -40,7 +41,19 @@ the responsive navigation, the chat UI, and the API routes that talk to the Echo
     cards in a 2×3 / 3×2 glass grid, staggered into view on scroll with hover lift and glow.
 11. **Models** → `src/components/landing/AIModelsSection.tsx` renders the six supported
     models with per-model accent colors, plus an infinite logo ticker beneath the grid.
-12. **Planned next steps** — a chat interface that posts a question to a `/api/chat` route,
+12. **Product preview** → `src/components/landing/ProductPreviewSection.tsx` is a tabbed
+    product walkthrough (chat, summarizer, explainer) with a CSS-drawn window per tab.
+13. **Why EchoGPT** → `src/components/landing/WhyChooseSection.tsx` lists the four
+    differentiators as a numbered, hairline-divided grid.
+14. **Pricing** → `src/components/landing/PricingSection.tsx` renders the three plans from
+    `src/lib/pricing.ts` with a monthly/yearly toggle.
+15. **FAQ** → `src/components/landing/FAQSection.tsx` is an accessible accordion over
+    `src/lib/faq.ts`.
+16. **Testimonials** → `src/components/landing/TestimonialsSection.tsx` renders the
+    placeholder quotes from `src/lib/testimonials.ts`.
+17. **Footer** → `src/components/landing/Footer.tsx` holds the logo, product/model link
+    columns, a pricing CTA and the copyright bar.
+18. **Planned next steps** — a chat interface that posts a question to a `/api/chat` route,
     which forwards it to the EchoGPT model and streams the answer back.
 
 ---
@@ -67,19 +80,31 @@ the responsive navigation, the chat UI, and the API routes that talk to the Echo
 ├── src/
 │   ├── app/                       # App Router — the app root
 │   │   ├── layout.tsx             # Root layout: fonts, ThemeProvider, metadata
-│   │   ├── page.tsx               # Landing page: Navbar + Hero + Features + Models + CTA
-│   │   ├── globals.css            # Tailwind entry, theme variables, no-JS fallback
+│   │   ├── page.tsx               # Landing page: all 9 sections + footer
+│   │   ├── globals.css            # Tailwind entry, theme variables, dot grid, no-JS fallback
 │   │   └── fonts/                 # Self-hosted Geist .woff files
 │   ├── components/
 │   │   ├── landing/
 │   │   │   ├── Navbar.tsx         # Responsive glassmorphism navbar (client)
 │   │   │   ├── HeroSection.tsx    # Animated hero + browser mockup (client)
 │   │   │   ├── FeaturesSection.tsx# 6 glass feature cards, staggered reveal (client)
-│   │   │   └── AIModelsSection.tsx# 6 model cards + infinite logo ticker (client)
+│   │   │   ├── AIModelsSection.tsx# 6 model cards + infinite logo ticker (client)
+│   │   │   ├── ProductPreviewSection.tsx # Tabbed product walkthrough (client)
+│   │   │   ├── WhyChooseSection.tsx     # Numbered differentiators (client)
+│   │   │   ├── PricingSection.tsx       # Plans + billing toggle (client)
+│   │   │   ├── FAQSection.tsx           # Accordion (client)
+│   │   │   ├── TestimonialsSection.tsx  # Quote cards (client)
+│   │   │   ├── CTASection.tsx           # Closing call to action
+│   │   │   ├── SectionHeading.tsx       # Shared label + title + subtitle
+│   │   │   ├── SectionDivider.tsx       # Gradient hairline between sections
+│   │   │   └── Footer.tsx               # Site footer
 │   │   └── theme-provider.tsx     # next-themes wrapper (client)
 │   └── lib/
 │       ├── features.ts            # Feature card data
 │       ├── models.ts              # AI model data + per-model accent classes
+│       ├── pricing.ts             # Pricing plans
+│       ├── faq.ts                 # FAQ entries
+│       ├── testimonials.ts        # Testimonial quotes
 │       ├── motion.ts              # Shared Framer Motion reveal variants
 │       └── utils.ts               # cn() class-name helper
 ├── tailwind.config.js             # Dark mode, fonts, color tokens, animation keyframes
@@ -234,20 +259,43 @@ are skipped when the `group` marker class is not in the same file.
 
 ---
 
-## 11. Known issues / next steps
+## 11. The remaining sections
 
-- **Nav targets are not built yet.** The navbar links to `/features`, `/ai-models`,
-  `/pricing` and `/faq`; those routes return 404 until the pages are created under
-  `src/app/`. "Features" and "AI Models" point at the in-page anchors `#features` and
-  `#models`; the "Get Started" buttons still link to `/get-started`, which needs a real
-  page.
-- **Chrome extension URL is a placeholder**: `CHROME_STORE_URL` in
-  `src/components/landing/HeroSection.tsx` points at the store root — replace it with the
-  real listing URL before launch.
-- **Placeholder metadata**: `layout.tsx` description should be finalized with the product
-  copy.
+- **Product preview** (`ProductPreviewSection.tsx`) — a real `role="tablist"` with three
+  tabs (multi-model chat, webpage summarizer, text explainer). Each tab renders a
+  CSS-drawn window inside `AnimatePresence`, with the active pill animated by `layoutId`.
+  The tab strip scrolls horizontally on narrow screens.
+- **Why EchoGPT** (`WhyChooseSection.tsx`) — four numbered differentiators in a
+  hairline-divided grid, revealed with the shared stagger variants.
+- **Pricing** (`PricingSection.tsx`) — three plans from `src/lib/pricing.ts` with a
+  monthly/yearly toggle that animates the pill with `layoutId`. The Free plan is
+  highlighted on the middle card with a "Most popular" badge.
+- **FAQ** (`FAQSection.tsx`) — accordion with `aria-expanded` / `aria-controls`, an
+  animated plus/cross and `AnimatePresence` height transitions. One item open at a time.
+- **Testimonials** (`TestimonialsSection.tsx`) — quote cards with star ratings and
+  gradient initial avatars.
+- **Footer** (`Footer.tsx`) — logo, tagline, Product and Models link columns, a pricing
+  CTA and a copyright bar. Every link is an in-page anchor, so nothing 404s.
+
+`SectionHeading` and `SectionDivider` are shared by all of the above, and
+`useRevealVariants()` (in `src/lib/motion.ts`) provides the scroll-triggered stagger with
+an opacity-only variant under `prefers-reduced-motion`.
+
+---
+
+## 12. Known issues / next steps
+
+- **Placeholder content that must be replaced before launch**: plan prices
+  (`src/lib/pricing.ts`), testimonials (`src/lib/testimonials.ts`), the Chrome Web Store
+  URL (`CHROME_STORE_URL`), and the `layout.tsx` description.
+- **No real routes yet**: the navbar, hero CTAs, pricing buttons and footer all use
+  in-page anchors. Create `src/app/chat` (and any other real pages) and switch the
+  "Get Started" links from `/#pricing` to those routes when they exist.
+- The tab strip in the product preview and the stats ticker rely on JS-driven animation;
+  the `motion-reveal` class plus the `@media (scripting: none)` rule in
+  `src/app/globals.css` keeps their content visible when scripting is off.
 - `next lint` prompts for setup on a machine without a resolved ESLint install — run
   `npm install` first, or set `CI=1` for non-interactive runs.
-- `next build` occasionally crashes its worker on this machine (exit code `3221225477`)
-  when it runs while `next start`/`next dev` still holds `.next`. Stop the dev server and
-  re-run the build.
+- `next build` sometimes fails with a corrupted webpack cache (`v.hasStartTime is not a
+  function`, or worker exit code `3221225477`) after an interrupted or concurrent run.
+  Delete `.next` and rebuild; stop `next dev`/`next start` before building.

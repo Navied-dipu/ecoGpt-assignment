@@ -333,7 +333,7 @@ export function HeroSection() {
           style={{ animationDelay: "240ms" }}
         >
           <Link
-            href="/get-started"
+            href="/#pricing"
             className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-600 via-blue-600 to-cyan-500 px-7 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-100"
           >
             Try Web App Free
