@@ -6,6 +6,8 @@ import { useRevealVariants } from "@/lib/motion";
 import { AI_MODELS } from "@/lib/models";
 import type { AIModel } from "@/lib/models";
 
+import { SectionHeading } from "./SectionHeading";
+
 function ModelAvatar({ model, size }: { model: AIModel; size: "sm" | "lg" }) {
   return (
     <span
@@ -54,36 +56,17 @@ export function AIModelsSection() {
   return (
     <section
       id="models"
-      aria-labelledby="ai-models-title"
+      aria-labelledby="models-title"
       className="relative scroll-mt-20 px-4 py-20 sm:px-6 sm:py-28 lg:px-8"
     >
       <div className="mx-auto w-full max-w-6xl">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-transparent">
-            <span
-              aria-hidden="true"
-              className="h-px w-8 bg-gradient-to-r from-transparent to-blue-500/60"
-            />
-            <span className="bg-gradient-to-r from-blue-600 via-violet-600 to-cyan-500 bg-clip-text">
-              Supported Models
-            </span>
-            <span
-              aria-hidden="true"
-              className="h-px w-8 bg-gradient-to-l from-transparent to-cyan-500/60"
-            />
-          </p>
-
-          <h2
-            id="ai-models-title"
-            className="mt-4 text-balance text-3xl font-bold tracking-tight sm:text-4xl"
-          >
-            All your favorite AIs, one interface
-          </h2>
-
-          <p className="mt-4 text-balance text-base text-muted-foreground sm:text-lg">
-            No more switching tabs. Access every major AI model from EchoGPT.
-          </p>
-        </div>
+        <SectionHeading
+          id="models"
+          label="Supported Models"
+          title="All your favorite AIs, one interface"
+          description="No more switching tabs. Access every major AI model from EchoGPT."
+          labelClassName="from-blue-600 via-violet-600 to-cyan-500"
+        />
 
         <motion.ul
           initial="hidden"
