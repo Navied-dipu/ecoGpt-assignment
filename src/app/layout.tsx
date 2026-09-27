@@ -17,9 +17,10 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "EchoGPT — AI for a sustainable planet",
+  title: "EchoGPT — Chat with every AI in one place",
   description:
-    "Ask anything about climate, energy, waste and sustainability and get clear, actionable answers powered by EchoGPT.",
+    "EchoGPT brings GPT-4o, Gemini Pro, Claude 3.5, Llama 3, Mistral and Grok into one interface. Chat, summarize and explain on the web and in your browser.",
+  metadataBase: new URL("https://ecogptlp.vercel.app"),
 };
 
 export default function RootLayout({

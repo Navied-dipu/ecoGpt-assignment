@@ -1,17 +1,60 @@
 # EchoGPT — Web
 
-Marketing site and web client for **EchoGPT**, a multi-model AI assistant that puts
-GPT-4o, Gemini Pro, Claude 3.5, Llama 3, Mistral and Grok behind a single interface
-(on the web and in a Chrome extension).
+**Live site:** **[https://ecogptlp.vercel.app](https://ecogptlp.vercel.app)**
 
-This repository is the Next.js 14 front end: a fully static, dark-mode-aware landing page
-with animated sections, anchor navigation, a product preview, pricing, FAQ, testimonials
-and a footer.
+Marketing site and web client for **EchoGPT** — a multi-model AI assistant that puts
+GPT-4o, Gemini Pro, Claude 3.5, Llama 3, Mistral and Grok behind a single interface, on
+the web and in a Chrome extension. Built with Next.js 14 (App Router), TypeScript,
+Tailwind CSS and Framer Motion, and deployed on Vercel.
 
-> **Status: complete landing page, no backend yet.** Every section renders, the page is
-> statically generated, and all navigation is client-side anchors. The chat API, auth and
-> the real routes (`/chat`, `/pricing`, …) do not exist yet — see
-> [Known issues and placeholders](#13-known-issues-and-placeholders).
+---
+
+## Overview
+
+**The problem.** Comparing AI models today means opening one browser tab per vendor,
+re-pasting the same prompt, and losing the thread when you switch. Every assistant also
+lives in its own UI with its own tone, its own history and its own idea of privacy.
+
+**The product.** EchoGPT is one interface in front of every major model. You ask once,
+read several answers side by side, and switch models without losing context — plus two
+companion tools that work on the page you are already reading (one-click page summaries
+and instant explanations for selected text).
+
+**Who it is for.** Researchers, developers, writers and small teams who read a lot, compare
+a lot, and do not want to hand their reading habits to six vendors at once.
+
+**What the product promises (as marketed on the page):**
+
+- Multi-model chat across six frontier models, with side-by-side comparison.
+- Webpage summarizer — turn a long article into a short brief.
+- Text explainer — select text on any page, get a plain-language explanation.
+- Secure and private — no third-party tracking, conversations are never used for training.
+- Keyboard shortcut — `Ctrl+Shift+E` from any Chrome tab.
+- Dark mode, light or dark, following the system preference.
+
+**Supported models and accent colours:**
+
+| Model | Provider | Capability tag | Accent |
+| --- | --- | --- | --- |
+| GPT-4o | OpenAI | Best for coding | emerald |
+| Gemini Pro | Google | Best for long context | blue |
+| Claude 3.5 | Anthropic | Best for long-form writing | orange |
+| Llama 3 | Meta | Best for private, on-device use | violet |
+| Mistral | Mistral AI | Best for speed and cost | teal |
+| Grok | xAI | Best for live web trends | zinc |
+
+**Plans:** Free (1 model, unlimited messages, 7-day history), Pro (all six models,
+extension, 90-day history), Team (shared workspaces, SSO, analytics). Prices live in
+`src/lib/pricing.ts` and are currently placeholders.
+
+**This repository contains:** the complete public landing page — navbar, hero, features,
+models, product preview, why-us, pricing, FAQ, testimonials, CTA and footer — plus the
+design system and content data behind them.
+
+> **Status: complete landing page, no backend yet.** The page is statically generated and
+> every navigation target is an in-page anchor. There is no `/api/chat`, no auth and no
+> `/chat` route yet; the chat interface in the hero and in the product preview is a
+> CSS illustration. See [Known issues and placeholders](#14-known-issues-and-placeholders).
 
 ---
 
@@ -27,9 +70,10 @@ and a footer.
 8. [Architecture and patterns](#8-architecture-and-patterns)
 9. [Accessibility and responsiveness](#9-accessibility-and-responsiveness)
 10. [How to extend the project](#10-how-to-extend-the-project)
-11. [Contribution rules](#11-contribution-rules)
-12. [Troubleshooting](#12-troubleshooting)
-13. [Known issues and placeholders](#13-known-issues-and-placeholders)
+11. [Deployment](#11-deployment)
+12. [Contribution rules](#12-contribution-rules)
+13. [Troubleshooting](#13-troubleshooting)
+14. [Known issues and placeholders](#14-known-issues-and-placeholders)
 
 ---
 
@@ -61,12 +105,12 @@ all copy, pricing and model data lives in `src/lib/`.
 | Script | What it does |
 | --- | --- |
 | `npm run dev` | Next dev server with hot reload on port 3000 |
-| `npm run build` | Optimized production build + type check + static export into `.next/` |
+| `npm run build` | Optimized production build + type check + static generation into `.next/` |
 | `npm run start` | Serves the production build (run `build` first) |
 | `npm run lint` | ESLint via `next lint` (config in `.eslintrc.json`) |
 
-On Windows/one-off runs set `CI=1` (e.g. `$env:CI='1'; npm run build`) so `next lint`
-never waits for interactive setup.
+On Windows or in one-off runs set `CI=1` (e.g. `$env:CI='1'; npm run build`) so
+`next lint` never waits for interactive setup.
 
 ---
 
@@ -74,7 +118,8 @@ never waits for interactive setup.
 
 | Layer | Choice | Why |
 | --- | --- | --- |
-| Framework | Next.js 14 (App Router) | file-system routing, RSC, static export, per-route metadata |
+| Hosting | Vercel | zero-config for the Next.js App Router, instant previews per branch |
+| Framework | Next.js 14 (App Router) | file-system routing, React Server Components, static generation, per-route metadata |
 | Language | TypeScript 5 (`strict`) | typed props and data tables for every section |
 | Styling | Tailwind CSS 3.4 | utility-first, themeable through CSS variables |
 | Animation | Framer Motion 11 | `whileInView` reveals, `layoutId` pills, `AnimatePresence` |
@@ -88,16 +133,18 @@ never waits for interactive setup.
 
 ## 4. How the page works, step by step
 
-1. **`src/app/layout.tsx` renders the document shell** — `<html lang="en" class="scroll-smooth">`,
-   the two Geist font variables on `<body>`, global CSS, and the `ThemeProvider`.
+1. **`src/app/layout.tsx` renders the document shell** — `<html lang="en"
+   class="scroll-smooth">`, the two Geist font variables on `<body>`, global CSS, the
+   `ThemeProvider`, and the page metadata (title, description, `metadataBase` pointing at
+   the live domain).
 2. **next-themes injects a tiny blocking script** that reads `localStorage` /
    `prefers-color-scheme` and puts the `dark` class on `<html>` *before* paint, so there
    is no light-to-dark flash.
 3. **`src/app/page.tsx` composes the page** — the navbar outside `<main>`, the nine
    sections separated by gradient dividers, then the `<Footer>`.
-4. **`page.tsx` is a Server Component.** It renders on the server at build time and ships
-   finished HTML. Only the interactive leaves are `"use client"` (navbar, hero, and the
-   card/accordion/tab sections), so most of the page is static HTML.
+4. **`page.tsx` is a Server Component.** It is rendered on the server at build time and
+   ships finished HTML. Only the interactive leaves are `"use client"` (navbar, hero and
+   the card/accordion/tab sections), so most of the page is static HTML.
 5. **Hydration** — the client components attach their scroll listeners, tab state and
    accordions. Entrance animations that depend on `IntersectionObserver` are driven by
    Framer Motion; the hero's entrance is plain CSS so the hero is never invisible if JS is
@@ -270,8 +317,8 @@ only external link is the Chrome Web Store placeholder.
 - Disclosure widgets: FAQ uses `aria-expanded`/`aria-controls`, the preview uses a proper
   `role="tablist"` / `role="tab"` / `role="tabpanel"` triple, and the pricing toggle uses
   `aria-pressed`.
-- Decorative art (`orbs`, marquee duplicate copy, gradient dividers) is `aria-hidden`;
-  the duplicated marquee copy is hidden so screen readers hear the model list once.
+- Decorative art (`orbs`, marquee duplicate copy, gradient dividers) is `aria-hidden`; the
+  duplicated marquee copy is hidden so screen readers hear the model list once.
 - Reduced motion: `useReducedMotion()` for Framer, `motion-reduce:animate-none` for CSS
   animations, and `scroll-behavior: auto`.
 - Breakpoints: one column on phones (features use 2), two on `sm`, three on `lg`; the
@@ -296,12 +343,40 @@ only external link is the Chrome Web Store placeholder.
   map it in `tailwind.config.js`.
 - **Add an animation** → add a keyframes entry and an animation entry in
   `tailwind.config.js`, then use `animate-<name>`.
-- **Change copy** → edit the `lib` data files or the section JSX; the README section map
-  (§5) should stay in sync.
+- **Change copy** → edit the `lib` data files or the section JSX; the section map (§5) should
+  stay in sync.
 
 ---
 
-## 11. Contribution rules
+## 11. Deployment
+
+The site is deployed on **Vercel** at **[https://ecogptlp.vercel.app](https://ecogptlp.vercel.app)**
+and is built straight from this repository's `main` branch.
+
+| Setting | Value |
+| --- | --- |
+| Framework preset | Next.js (auto-detected) |
+| Build command | `npm run build` |
+| Output | `.next` (App Router, all routes statically generated) |
+| Node version | 18+ |
+| Environment variables | none |
+| Regions | default (`iad1`) |
+
+- **Redeploy after a push** — every commit to `main` triggers a Vercel build. Check the
+  build status in the Vercel dashboard; the production alias updates when it passes.
+- **Preview a branch** — push any other branch and Vercel serves it at a unique preview URL,
+  which is the fastest way to review a section before it ships.
+- **Local parity check** — `npm run build && npm run start` reproduces the deployed
+  behaviour; there is no server-side runtime, so anything that works locally works in
+  production.
+- **Metadata** — `src/app/layout.tsx` sets `metadataBase` to the live domain, so Open Graph
+  and favicon URLs resolve absolutely. Update it if the domain changes.
+- **Custom domain** — add the domain in Vercel's *Settings → Domains*; no code change is
+  needed, but remember to update `metadataBase`.
+
+---
+
+## 12. Contribution rules
 
 `AGENTS.md` is the contract for anyone (human or agent) working in this repo:
 
@@ -317,7 +392,7 @@ neighboring file style, and do not add code comments unless asked.
 
 ---
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 | Symptom | Cause and fix |
 | --- | --- |
@@ -328,23 +403,27 @@ neighboring file style, and do not add code comments unless asked.
 | A color/hover style does nothing | The class was built at runtime or is a `group-hover:` variant without a `group` marker in the same file. Use a literal class. |
 | Section invisible with JS disabled | Wrap it in `motion-reveal` (see §8). |
 | Port 3000 already in use | Stop the other process, or run `npx next start -p 3100`. |
+| Changes not visible on the live site | The deploy is still building — check the Vercel dashboard; a commit to `main` triggers it. |
 
 ---
 
-## 13. Known issues and placeholders
+## 14. Known issues and placeholders
 
-Everything below must be replaced before this goes live:
+Everything below must be replaced before this goes beyond a marketing build:
 
 - **Plan prices** — `src/lib/pricing.ts` (`$0 / $15 / $29` monthly, `$0 / $12 / $24` yearly)
-  are invented placeholders.
-- **Testimonials** — `src/lib/testimonials.ts` contains fictional names and quotes.
+  are invented placeholders. The page even says so out loud under the pricing grid.
+- **Testimonials** — `src/lib/testimonials.ts` contains fictional names and quotes; the
+  section subtitle says "Placeholder quotes for this build".
 - **Chrome extension URL** — `CHROME_STORE_URL` in `HeroSection.tsx` points at the Web
   Store root, not a listing.
-- **Meta description** — `layout.tsx` still carries a generic description.
-- **No backend yet** — there is no `/api/chat`, no auth, and no `src/app/chat` route. The
-  product preview and chat mockup are CSS illustrations.
+- **No backend yet** — there is no `/api/chat`, no auth and no `src/app/chat` route. The
+  product preview and hero mockup are CSS illustrations, and the stats row
+  (10,000+ users, 4.9★) is illustrative, not measured.
 - **No real routes** — navbar, hero CTAs, pricing buttons and footer all use in-page
   anchors. When `/chat` and the other pages exist, switch the "Get Started" links from
   `/#pricing` to them.
 - **Legal pages** — no `/privacy` or `/terms`; the footer intentionally links to nothing
   rather than to dead routes.
+- **Social proof** — no Open Graph image is configured yet, so link previews fall back to
+  the plain title and description.

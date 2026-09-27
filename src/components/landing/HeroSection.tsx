@@ -33,17 +33,17 @@ const MESSAGES = [
   {
     id: "q1",
     from: "user" as const,
-    text: "Solar or wind for a mid-sized city?",
+    text: "Draft a release note for our Chrome extension.",
   },
   {
     id: "a1",
-    from: "GPT-4" as const,
-    text: "Solar wins on cost per kWh here, but wind covers the winter peak.",
+    from: "GPT-4o" as const,
+    text: "Here is a tight version: faster sidebar, fewer bugs, one-click page summaries.",
   },
   {
     id: "a2",
-    from: "Claude" as const,
-    text: "Agreed — a 60/40 mix keeps the grid stable year round.",
+    from: "Claude 3.5" as const,
+    text: "Shorter still: “Faster sidebar, fewer bugs, one-click summaries — out now.”",
   },
 ];
 
