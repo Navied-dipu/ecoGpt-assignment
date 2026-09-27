@@ -3,13 +3,9 @@
 import { motion } from "framer-motion";
 
 import { FEATURES } from "@/lib/features";
-import type { Feature } from "@/lib/features";
 import { useRevealVariants } from "@/lib/motion";
 
 import { SectionHeading } from "./SectionHeading";
-
-export type { Feature };
-export { FEATURES };
 
 export function FeaturesSection() {
   const variants = useRevealVariants();

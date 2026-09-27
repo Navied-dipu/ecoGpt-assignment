@@ -1,301 +1,350 @@
-# EchoGPT Web
+# EchoGPT — Web
 
-Web front-end for **EchoGPT** — an AI assistant for environmental and sustainability
-questions. This repository contains the Next.js application that serves the landing page,
-the responsive navigation, the chat UI, and the API routes that talk to the EchoGPT model.
+Marketing site and web client for **EchoGPT**, a multi-model AI assistant that puts
+GPT-4o, Gemini Pro, Claude 3.5, Llama 3, Mistral and Grok behind a single interface
+(on the web and in a Chrome extension).
 
-> **Current status: scaffold + landing page navigation.** The app boots, renders the
-> landing page with the responsive glassmorphism navbar, and supports light/dark themes.
-> The chat feature, auth, and API routes are not implemented yet, so this README
-> documents what exists today and exactly where each new piece goes.
+This repository is the Next.js 14 front end: a fully static, dark-mode-aware landing page
+with animated sections, anchor navigation, a product preview, pricing, FAQ, testimonials
+and a footer.
 
----
-
-## 1. What the project does (step by step)
-
-1. **A visitor opens the site** → Next.js serves the App Router shell defined in
-   `src/app/layout.tsx` (HTML skeleton, Geist fonts, global Tailwind styles, theme provider).
-2. **Next.js picks the route** → `src/app/page.tsx` is the `/` route. Every folder under
-   `src/app/` is a URL segment (`src/app/about/page.tsx` → `/about`).
-3. **React renders the page to HTML on the server** (Server Component by default) and
-   ships the result to the browser for instant first paint.
-4. **Hydration** → components marked `"use client"` (the navbar, the theme provider)
-   run in the browser and become interactive.
-5. **Theming** → `src/components/theme-provider.tsx` wraps the app in `next-themes`; the
-   active theme is applied as a `dark` class on `<html>`, and `src/app/globals.css` swaps
-   the CSS variables for light/dark values.
-6. **Styling** → Tailwind utility classes are compiled from the globs in
-   `tailwind.config.js`; colors come from the CSS variables in `src/app/globals.css`.
-7. **Page shell** → `src/app/page.tsx` composes the navbar (outside `<main>`), the nine
-   sections in order, a gradient divider between each, the footer, and a dot-grid page
-   background. Every section carries an anchor id: `#hero`, `#features`, `#models`,
-   `#preview`, `#why`, `#pricing`, `#faq`, `#testimonials`.
-8. **Navigation** → `src/components/landing/Navbar.tsx` renders a fixed, blurred navbar
-   that shrinks and gains a shadow once the page is scrolled, highlights the section
-   currently in view with an animated underline, and collapses into an animated hamburger
-   menu on mobile.
-9. **Hero** → `src/components/landing/HeroSection.tsx` renders the animated gradient
-   background, floating orbs, the shimmer badge, the headline and CTAs, the count-up stats
-   row, and a floating browser mockup that previews the multi-model chat UI.
-10. **Features** → `src/components/landing/FeaturesSection.tsx` renders the six product
-    cards in a 2×3 / 3×2 glass grid, staggered into view on scroll with hover lift and glow.
-11. **Models** → `src/components/landing/AIModelsSection.tsx` renders the six supported
-    models with per-model accent colors, plus an infinite logo ticker beneath the grid.
-12. **Product preview** → `src/components/landing/ProductPreviewSection.tsx` is a tabbed
-    product walkthrough (chat, summarizer, explainer) with a CSS-drawn window per tab.
-13. **Why EchoGPT** → `src/components/landing/WhyChooseSection.tsx` lists the four
-    differentiators as a numbered, hairline-divided grid.
-14. **Pricing** → `src/components/landing/PricingSection.tsx` renders the three plans from
-    `src/lib/pricing.ts` with a monthly/yearly toggle.
-15. **FAQ** → `src/components/landing/FAQSection.tsx` is an accessible accordion over
-    `src/lib/faq.ts`.
-16. **Testimonials** → `src/components/landing/TestimonialsSection.tsx` renders the
-    placeholder quotes from `src/lib/testimonials.ts`.
-17. **Footer** → `src/components/landing/Footer.tsx` holds the logo, product/model link
-    columns, a pricing CTA and the copyright bar.
-18. **Planned next steps** — a chat interface that posts a question to a `/api/chat` route,
-    which forwards it to the EchoGPT model and streams the answer back.
+> **Status: complete landing page, no backend yet.** Every section renders, the page is
+> statically generated, and all navigation is client-side anchors. The chat API, auth and
+> the real routes (`/chat`, `/pricing`, …) do not exist yet — see
+> [Known issues and placeholders](#13-known-issues-and-placeholders).
 
 ---
 
-## 2. Tech stack
+## Contents
 
-| Layer | Choice |
+1. [Quick start](#1-quick-start)
+2. [Scripts](#2-scripts)
+3. [Tech stack](#3-tech-stack)
+4. [How the page works, step by step](#4-how-the-page-works-step-by-step)
+5. [Section map](#5-section-map)
+6. [Project structure](#6-project-structure)
+7. [Design system](#7-design-system)
+8. [Architecture and patterns](#8-architecture-and-patterns)
+9. [Accessibility and responsiveness](#9-accessibility-and-responsiveness)
+10. [How to extend the project](#10-how-to-extend-the-project)
+11. [Contribution rules](#11-contribution-rules)
+12. [Troubleshooting](#12-troubleshooting)
+13. [Known issues and placeholders](#13-known-issues-and-placeholders)
+
+---
+
+## 1. Quick start
+
+```bash
+# 1. install dependencies (Node 18+)
+npm install
+
+# 2. start the dev server with hot reload
+npm run dev            # http://localhost:3000
+
+# 3. verify before you commit (all three are required by AGENTS.md)
+npm run lint           # ESLint (eslint-config-next)
+npx tsc --noEmit       # TypeScript, no emit
+npm run build          # production build into .next/
+
+# 4. serve the production build locally
+npm run start
+```
+
+There is no `.env` file and no external service to configure: the site is fully static and
+all copy, pricing and model data lives in `src/lib/`.
+
+---
+
+## 2. Scripts
+
+| Script | What it does |
 | --- | --- |
-| Framework | Next.js 14 (App Router) |
-| Language | TypeScript |
-| Styling | Tailwind CSS 3 + CSS variables for theming |
-| Animation | Framer Motion 11 |
-| Theming | `next-themes` (light / dark / system) |
-| Class merging | `clsx` + `tailwind-merge` via `cn()` |
-| Fonts | `next/font/local` — Geist Sans + Geist Mono (self-hosted) |
-| Runtime | Node.js, npm scripts |
+| `npm run dev` | Next dev server with hot reload on port 3000 |
+| `npm run build` | Optimized production build + type check + static export into `.next/` |
+| `npm run start` | Serves the production build (run `build` first) |
+| `npm run lint` | ESLint via `next lint` (config in `.eslintrc.json`) |
+
+On Windows/one-off runs set `CI=1` (e.g. `$env:CI='1'; npm run build`) so `next lint`
+never waits for interactive setup.
 
 ---
 
-## 3. Project structure
+## 3. Tech stack
+
+| Layer | Choice | Why |
+| --- | --- | --- |
+| Framework | Next.js 14 (App Router) | file-system routing, RSC, static export, per-route metadata |
+| Language | TypeScript 5 (`strict`) | typed props and data tables for every section |
+| Styling | Tailwind CSS 3.4 | utility-first, themeable through CSS variables |
+| Animation | Framer Motion 11 | `whileInView` reveals, `layoutId` pills, `AnimatePresence` |
+| CSS animation | Tailwind keyframes | `rise-in`, `float`, `marquee`, `sheen`, `gradient-pan`, … |
+| Theming | `next-themes` 0.3 | class-based light/dark/system with no flash on load |
+| Class merging | `clsx` + `tailwind-merge` | `cn()` helper in `src/lib/utils.ts` |
+| Fonts | `next/font/local` | self-hosted Geist Sans + Geist Mono, no network request |
+| Icons | inline SVG / emoji | zero icon-library dependency |
+
+---
+
+## 4. How the page works, step by step
+
+1. **`src/app/layout.tsx` renders the document shell** — `<html lang="en" class="scroll-smooth">`,
+   the two Geist font variables on `<body>`, global CSS, and the `ThemeProvider`.
+2. **next-themes injects a tiny blocking script** that reads `localStorage` /
+   `prefers-color-scheme` and puts the `dark` class on `<html>` *before* paint, so there
+   is no light-to-dark flash.
+3. **`src/app/page.tsx` composes the page** — the navbar outside `<main>`, the nine
+   sections separated by gradient dividers, then the `<Footer>`.
+4. **`page.tsx` is a Server Component.** It renders on the server at build time and ships
+   finished HTML. Only the interactive leaves are `"use client"` (navbar, hero, and the
+   card/accordion/tab sections), so most of the page is static HTML.
+5. **Hydration** — the client components attach their scroll listeners, tab state and
+   accordions. Entrance animations that depend on `IntersectionObserver` are driven by
+   Framer Motion; the hero's entrance is plain CSS so the hero is never invisible if JS is
+   slow.
+6. **Scrolling** — the navbar uses Framer's `useScroll` to shrink and add a shadow, and a
+   scroll-spy hook marks the section currently in view with an animated underline.
+7. **Theming** — the toggle flips the `dark` class; `globals.css` swaps the CSS variables
+   and every component follows. The dot-grid background has its own `.dark` variant.
+
+---
+
+## 5. Section map
+
+Rendered in this order, each with an anchor id and `scroll-mt-20` so the fixed navbar
+never covers a heading.
+
+| # | id | Component | What it does |
+| --- | --- | --- | --- |
+| — | — | `Navbar.tsx` | Fixed glass navbar: logo, 5 anchor links, theme toggle, "Get Started", mobile hamburger menu, scroll-spy active underline |
+| 1 | `#hero` | `HeroSection.tsx` | Animated purple→cyan gradient, floating orbs, shimmer badge, headline, two CTAs, count-up stats, floating browser mockup, scroll arrow |
+| 2 | `#features` | `FeaturesSection.tsx` | Six glass feature cards (2×3 mobile → 3×2 desktop) with emoji tiles, hover lift + gradient glow |
+| 3 | `#models` | `AIModelsSection.tsx` | Six model cards with per-model accent color, letter avatar, capability tag, gradient top border, colored hover glow, plus an infinite logo ticker |
+| 4 | `#preview` | `ProductPreviewSection.tsx` | Tabbed walkthrough (multi-model chat / webpage summarizer / text explainer), each tab a CSS-drawn window |
+| 5 | `#why` | `WhyChooseSection.tsx` | Four numbered differentiators in a hairline-divided grid |
+| 6 | `#pricing` | `PricingSection.tsx` | Three plans with a monthly/yearly toggle and a "Most popular" badge |
+| 7 | `#faq` | `FAQSection.tsx` | Accessible accordion, one answer open at a time |
+| 8 | `#testimonials` | `TestimonialsSection.tsx` | Quote cards with star ratings and gradient initial avatars |
+| 9 | — | `CTASection.tsx` | Closing call to action ("See pricing") |
+| — | — | `Footer.tsx` | Logo, Product and Models link columns, pricing CTA, copyright bar |
+
+---
+
+## 6. Project structure
 
 ```
 .
 ├── src/
-│   ├── app/                       # App Router — the app root
-│   │   ├── layout.tsx             # Root layout: fonts, ThemeProvider, metadata
-│   │   ├── page.tsx               # Landing page: all 9 sections + footer
-│   │   ├── globals.css            # Tailwind entry, theme variables, dot grid, no-JS fallback
-│   │   └── fonts/                 # Self-hosted Geist .woff files
+│   ├── app/
+│   │   ├── layout.tsx                 # <html>, fonts, ThemeProvider, metadata
+│   │   ├── page.tsx                   # Landing page: all 9 sections + footer
+│   │   ├── globals.css                # Tailwind layers, theme vars, dot grid, fallbacks
+│   │   ├── favicon.ico
+│   │   └── fonts/                     # Self-hosted GeistVF.woff, GeistMonoVF.woff
 │   ├── components/
-│   │   ├── landing/
-│   │   │   ├── Navbar.tsx         # Responsive glassmorphism navbar (client)
-│   │   │   ├── HeroSection.tsx    # Animated hero + browser mockup (client)
-│   │   │   ├── FeaturesSection.tsx# 6 glass feature cards, staggered reveal (client)
-│   │   │   ├── AIModelsSection.tsx# 6 model cards + infinite logo ticker (client)
-│   │   │   ├── ProductPreviewSection.tsx # Tabbed product walkthrough (client)
-│   │   │   ├── WhyChooseSection.tsx     # Numbered differentiators (client)
-│   │   │   ├── PricingSection.tsx       # Plans + billing toggle (client)
-│   │   │   ├── FAQSection.tsx           # Accordion (client)
-│   │   │   ├── TestimonialsSection.tsx  # Quote cards (client)
-│   │   │   ├── CTASection.tsx           # Closing call to action
-│   │   │   ├── SectionHeading.tsx       # Shared label + title + subtitle
-│   │   │   ├── SectionDivider.tsx       # Gradient hairline between sections
-│   │   │   └── Footer.tsx               # Site footer
-│   │   └── theme-provider.tsx     # next-themes wrapper (client)
+│   │   ├── theme-provider.tsx         # next-themes wrapper ("use client")
+│   │   └── landing/
+│   │       ├── Navbar.tsx             # Glass navbar, theme toggle, mobile menu, scroll-spy
+│   │       ├── HeroSection.tsx        # Gradient, orbs, stats, browser mockup
+│   │       ├── FeaturesSection.tsx    # 6 feature cards
+│   │       ├── AIModelsSection.tsx    # 6 model cards + marquee ticker
+│   │       ├── ProductPreviewSection.tsx # Tabbed product walkthrough
+│   │       ├── WhyChooseSection.tsx   # 4 differentiators
+│   │       ├── PricingSection.tsx     # Plans + billing cycle toggle
+│   │       ├── FAQSection.tsx         # Accordion
+│   │       ├── TestimonialsSection.tsx# Quote cards
+│   │       ├── CTASection.tsx         # Closing CTA
+│   │       ├── SectionHeading.tsx     # Shared eyebrow label + title + subtitle
+│   │       ├── SectionDivider.tsx     # Gradient hairline between sections
+│   │       └── Footer.tsx             # Site footer
 │   └── lib/
-│       ├── features.ts            # Feature card data
-│       ├── models.ts              # AI model data + per-model accent classes
-│       ├── pricing.ts             # Pricing plans
-│       ├── faq.ts                 # FAQ entries
-│       ├── testimonials.ts        # Testimonial quotes
-│       ├── motion.ts              # Shared Framer Motion reveal variants
-│       └── utils.ts               # cn() class-name helper
-├── tailwind.config.js             # Dark mode, fonts, color tokens, animation keyframes
-├── tsconfig.json                  # Path alias @/* -> ./src/*
-├── next.config.mjs
-└── package.json
+│       ├── features.ts                # Feature card copy
+│       ├── models.ts                  # Model list + per-model accent classes
+│       ├── pricing.ts                 # Plans, prices, feature lists
+│       ├── faq.ts                     # Question/answer pairs
+│       ├── testimonials.ts            # Quotes, names, ratings
+│       ├── motion.ts                  # Shared reveal variants + useRevealVariants()
+│       └── utils.ts                   # cn() class-name helper
+├── .eslintrc.json                     # next/core-web-vitals + next/typescript
+├── .gitignore                         # ignores .next, node_modules, .env*.local
+├── AGENTS.md                          # rules every agent/command must follow
+├── next.config.mjs                    # default Next config
+├── package.json
+├── postcss.config.mjs
+├── tailwind.config.js                 # theme tokens, keyframes, animations
+└── tsconfig.json                      # strict, alias @/* -> ./src/*
 ```
 
-Path alias: `@/components/landing/Navbar` resolves to `src/components/landing/Navbar`.
+Path alias: `@/components/landing/Navbar` → `src/components/landing/Navbar`.
 
 ---
 
-## 4. Getting started (step by step)
+## 7. Design system
 
-1. **Install dependencies**
+**Theme tokens.** `src/app/globals.css` defines CSS variables for
+`--background`, `--foreground`, `--primary`, `--secondary`, `--muted`, `--accent`,
+`--border` and `--radius` in `:root`, and a `.dark` block that overrides all of them.
+`tailwind.config.js` maps them to `bg-background`, `text-foreground`, `border-border`, …,
+so dark mode is a single class toggle with no per-component `dark:` duplication.
 
-   ```bash
-   npm install
-   ```
+**Dark mode.** `darkMode: ["class"]` + `next-themes` (`attribute="class"`,
+`defaultTheme="system"`, `enableSystem`, `disableTransitionOnChange`). Components add
+`dark:` variants only for translucency (e.g. `bg-white/60 dark:bg-white/5`).
 
-2. **Start the dev server** (hot reload, http://localhost:3000)
+**Fonts.** Geist Sans and Geist Mono are self-hosted through `next/font/local` and exposed
+as `--font-geist-sans` / `--font-geist-mono`, then wired to Tailwind's `font-sans` and
+`font-mono` so no component needs `font-[family-name:…]`.
 
-   ```bash
-   npm run dev
-   ```
+**Animation vocabulary** (all defined in `tailwind.config.js`):
 
-3. **Edit a page or component** — `src/app/page.tsx` for page composition,
-   `src/components/landing/` for the navbar and hero; the browser updates instantly.
+| Keyframe | Duration | Used by |
+| --- | --- | --- |
+| `rise-in` | 0.6s | hero entrance (`animate-rise-in motion-reduce:animate-none`) |
+| `gradient-pan` | 14s | hero background gradient |
+| `float` / `drift-x` | 9s / 13s | hero orbs |
+| `sheen` / `shimmer` | 3.2s / 3.5s | hero badge highlight |
+| `marquee` | 38s | model ticker, pauses on hover |
 
-4. **Verify before you commit** (required by `AGENTS.md`)
+**Glassmorphism.** Navbar `bg-white/80 dark:bg-black/80 backdrop-blur-md`; section cards
+`bg-white/60 dark:bg-white/5 backdrop-blur-md`; hero mockup `bg-background/70
+backdrop-blur-xl`.
 
-   ```bash
-   npm run lint        # ESLint via next lint
-   npx tsc --noEmit    # TypeScript type check
-   npm run build       # production build
-   ```
-
-5. **Commit and push your work** (also required by `AGENTS.md`)
-
-   ```bash
-   git add <files you changed>
-   git commit -m "feat: short summary"
-   git push
-   ```
+**Page background.** `.bg-dot-grid` — a 22px radial-gradient dot pattern with a `.dark`
+override, applied to the page wrapper. `.text-balance` is a small local utility for
+balanced headings.
 
 ---
 
-## 5. Available scripts
+## 8. Architecture and patterns
 
-| Script | What it does |
+**Server by default.** `page.tsx`, `layout.tsx`, `SectionHeading`, `SectionDivider`,
+`CTASection` and `Footer` are Server Components. Anything that needs state, effects or
+browser APIs is a separate `"use client"` leaf.
+
+**Data lives in `src/lib/`.** Copy and configuration are plain typed modules
+(`FEATURES`, `AI_MODELS`, `PRICING_PLANS`, `FAQ_ITEMS`, `TESTIMONIALS`) so sections stay
+presentational and a copy change never touches JSX. Server Components import them
+directly; client components import them inside their client boundary.
+
+**Shared reveal animation.** `useRevealVariants()` (in `src/lib/motion.ts`, marked
+`"use client"`) returns a container variant (`staggerChildren: 0.09`) and a card variant.
+Under `prefers-reduced-motion` it returns an opacity-only card variant, so the y-slide is
+never forced on users who asked for less movement.
+
+**Progressive enhancement for scroll reveals.** Anything animated with `whileInView` gets
+the `motion-reveal` class, and `globals.css` contains:
+
+```css
+@media (scripting: none) {
+  .motion-reveal { opacity: 1 !important; transform: none !important; }
+}
+```
+
+so the content is visible when scripting is disabled. For the same reason the hero's
+entrance uses the CSS `rise-in` keyframes rather than Framer's `initial`/`animate`, which
+would render the hero as inline `opacity: 0` in the HTML.
+
+**Anchor navigation.** The navbar links to `/#<section>` and a scroll-spy hook
+(`useActiveHash`) compares each section's `getBoundingClientRect().top` against a 140px
+offset to set `aria-current="location"` and the `layoutId` underline. Smooth scrolling is
+`scroll-smooth` on `<html>`, disabled under `prefers-reduced-motion`.
+
+**Tailwind gotcha (important when editing data files).** Color classes stored in
+`src/lib/models.ts` must remain *literal strings* — Tailwind scans source text, so
+runtime-built class names are dropped. The same applies to `group-hover:` variants: they
+are only generated when the `group` marker class exists in the same file, which is why the
+model cards use plain `hover:` variants.
+
+**No dead routes.** Every internal link is an in-page anchor, so the site has no 404s. The
+only external link is the Chrome Web Store placeholder.
+
+---
+
+## 9. Accessibility and responsiveness
+
+- Landmarks: `<header>` (navbar), `<main>`, `<footer>`; every section is labelled by its
+  heading with `aria-labelledby`; footer columns use `<nav aria-label="Product">`.
+- Keyboard: visible `focus-visible` rings on every interactive element, `Escape` closes the
+  mobile menu, body scroll is locked while it is open, and the menu closes on route change
+  and when the viewport reaches desktop width.
+- Disclosure widgets: FAQ uses `aria-expanded`/`aria-controls`, the preview uses a proper
+  `role="tablist"` / `role="tab"` / `role="tabpanel"` triple, and the pricing toggle uses
+  `aria-pressed`.
+- Decorative art (`orbs`, marquee duplicate copy, gradient dividers) is `aria-hidden`;
+  the duplicated marquee copy is hidden so screen readers hear the model list once.
+- Reduced motion: `useReducedMotion()` for Framer, `motion-reduce:animate-none` for CSS
+  animations, and `scroll-behavior: auto`.
+- Breakpoints: one column on phones (features use 2), two on `sm`, three on `lg`; the
+  navbar collapses to an animated hamburger below `md`; the page wrapper is
+  `overflow-x-clip` so no section can create horizontal scroll.
+
+---
+
+## 10. How to extend the project
+
+- **Add a section** → create `src/components/landing/XSection.tsx`, give the `<section>` an
+  `id` and `scroll-mt-20`, use `SectionHeading` for the eyebrow/title/subtitle, wrap the
+  reveal with `useRevealVariants()`, then add `<SectionDivider />` + the component in
+  `src/app/page.tsx` and a link in `NAV_LINKS` (`src/components/landing/Navbar.tsx`).
+- **Add a model** → append to `AI_MODELS` in `src/lib/models.ts`. The model card, the hero
+  chat preview sidebar and the ticker all read from that array. Give it an `accent` with
+  literal Tailwind classes.
+- **Add a feature** → append to `FEATURES` in `src/lib/features.ts`.
+- **Add a plan / FAQ entry / testimonial** → `src/lib/pricing.ts`, `src/lib/faq.ts`,
+  `src/lib/testimonials.ts`.
+- **Add a color** → add the CSS variable in `src/app/globals.css` (light **and** dark) and
+  map it in `tailwind.config.js`.
+- **Add an animation** → add a keyframes entry and an animation entry in
+  `tailwind.config.js`, then use `animate-<name>`.
+- **Change copy** → edit the `lib` data files or the section JSX; the README section map
+  (§5) should stay in sync.
+
+---
+
+## 11. Contribution rules
+
+`AGENTS.md` is the contract for anyone (human or agent) working in this repo:
+
+1. **Commit and push after every task** — never leave finished work uncommitted; stage
+   only task-related files, one task = one commit, then `git push`.
+2. **Verify before commit** — `npm run lint`, `npx tsc --noEmit`, `npm run build`.
+3. **Self-review loop** — re-read the requirement, hunt for bugs (edge cases, null safety,
+   a11y, mobile layout, stale state, types), fix, re-verify, repeat until a pass is clean.
+4. **Report** — what changed, verification results, findings fixed, commit hash.
+
+Code conventions: no `any`, no unused variables, no leftover `console.log`, follow
+neighboring file style, and do not add code comments unless asked.
+
+---
+
+## 12. Troubleshooting
+
+| Symptom | Cause and fix |
 | --- | --- |
-| `npm run dev` | Starts the dev server on port 3000 |
-| `npm run build` | Creates the optimized production build in `.next/` |
-| `npm run start` | Serves the production build |
-| `npm run lint` | Runs ESLint with `eslint-config-next` |
+| `next build` fails with `v.hasStartTime is not a function` | Corrupted webpack cache. Delete `.next` and rebuild. |
+| Build worker exits with `3221225477` | Interrupted or concurrent build. Stop `next dev` / `next start` first, then `npm run build`. |
+| `Failed to read source code from …node_modules]next…` | Same cache problem; `Remove-Item -Recurse -Force .next` (or `rm -rf .next`). |
+| `next lint` hangs waiting for input | Run `npm install` first, or set `CI=1`. |
+| A color/hover style does nothing | The class was built at runtime or is a `group-hover:` variant without a `group` marker in the same file. Use a literal class. |
+| Section invisible with JS disabled | Wrap it in `motion-reveal` (see §8). |
+| Port 3000 already in use | Stop the other process, or run `npx next start -p 3100`. |
 
 ---
 
-## 6. How to add things
+## 13. Known issues and placeholders
 
-- **A new page** → create `src/app/<route>/page.tsx` and export a default component.
-- **A shared component** → put it in `src/components/`, import as `@/components/<name>`.
-- **Client interactivity** → add `"use client"` at the top of the file.
-- **An API route** → create `src/app/api/<name>/route.ts` exporting `GET`/`POST`.
-- **Server data fetching** → async Server Components; add `"use client"` only when you
-  need state, effects, or browser APIs.
-- **A new nav item** → add an entry to `NAV_LINKS` in
-  `src/components/landing/Navbar.tsx` (exported, typed as `NavLink`).
-- **A new color** → add a CSS variable in `src/app/globals.css` (light and dark) and map
-  it in `tailwind.config.js`.
+Everything below must be replaced before this goes live:
 
----
-
-## 7. The navbar in detail
-
-`src/components/landing/Navbar.tsx` is a client component that:
-
-- keeps the logo (inline SVG + "EchoGPT") on the left, links centered on desktop, and the
-  theme toggle + "Get Started" CTA on the right;
-- stays fixed with `bg-white/80 dark:bg-black/80 backdrop-blur-md`;
-- uses Framer Motion's `useScroll` to shrink the bar from `h-20` to `h-16` and add a
-  shadow after 24px of scroll;
-- animates the hamburger bars into an X and the dropdown panel with `AnimatePresence`;
-- marks the active link with `aria-current` and a shared `layoutId` underline;
-- locks body scroll while the mobile menu is open and closes it on route change or `Escape`.
-
----
-
-## 8. The hero in detail
-
-`src/components/landing/HeroSection.tsx` is a client component that:
-
-- paints an animated purple → blue → cyan gradient plus three blurred orbs that float
-  (`gradient-pan`, `float`, `drift-x` keyframes in `tailwind.config.js`);
-- renders the "✨ Multi-AI Chat Platform" badge with a sweeping sheen highlight;
-- stacks headline, subheadline, the two CTAs ("Try Web App Free" filled gradient,
-  "Add to Chrome" outlined with an inline Chrome logo), and the stats row on mobile;
-- counts the stats up (`10,000+ Users · 5+ AI Models · 4.9★ Rating · Free to Start`) once
-  the row scrolls into view, with the final values present in the server HTML;
-- draws a browser mockup entirely with divs (traffic lights, URL pill, model sidebar,
-  chat bubbles, composer) that floats up and down forever;
-- bounces the scroll-indicator arrow and links it to the `#features` section.
-
-Entrance animations are CSS (`animate-rise-in`) rather than Framer Motion so the hero is
-never invisible when JavaScript is slow or disabled; every animation is disabled under
-`prefers-reduced-motion` via `motion-reduce:animate-none` / `useReducedMotion`.
-
----
-
-## 9. The features section in detail
-
-`src/components/landing/FeaturesSection.tsx` is a client component that:
-
-- labels itself "FEATURES" between two gradient rules, followed by the title
-  "Everything you need in one AI platform" and a one-line subtitle;
-- lays the six cards out as 2×3 on mobile and 3×2 from `lg` up;
-- gives every card a glass surface (`bg-white/60 dark:bg-white/5 backdrop-blur-md`) and an
-  icon in a per-card gradient rounded square;
-- lifts the card 6px on hover with `whileHover` while a gradient ring plus a blurred glow
-  fade in (CSS `group-hover`, so the effect survives without JS);
-- reveals the cards bottom-to-top with `whileInView` and a `staggerChildren: 0.09` parent
-  variant, running once;
-- drops the slide and animates opacity only when the user prefers reduced motion.
-
-Because the reveal relies on `IntersectionObserver`, the cards are given a `motion-reveal`
-class, and `src/app/globals.css` contains an `@media (scripting: none)` rule that forces
-those cards visible when scripting is disabled.
-
----
-
-## 10. The models section in detail
-
-`src/components/landing/AIModelsSection.tsx` is a client component that:
-
-- labels itself "SUPPORTED MODELS" between two gradient rules, followed by the title
-  "All your favorite AIs, one interface" and the subtitle;
-- renders GPT-4o, Gemini Pro, Claude 3.5, Llama 3, Mistral and Grok from `AI_MODELS` in
-  `src/lib/models.ts`, one column on mobile, two on `sm`, three on `lg`;
-- gives every card a colored letter avatar, the model name and provider, a capability tag,
-  and a gradient top-border accent in that model's color;
-- scales the card up 2% and adds a colored glow shadow on hover (`whileHover` for the
-  transform, `hover:shadow-<color>/30` for the glow);
-- scrolls the model ticker forever with the `marquee` keyframes: the list is rendered twice
-  inside a `w-max` track and translated `-50%`, with the duplicate copy `aria-hidden` so
-  screen readers hear it once. The marquee pauses on hover and is disabled under
-  `prefers-reduced-motion`;
-- fades the edge of the ticker with a `mask-image` gradient.
-
-Per-model colors live in `src/lib/models.ts` as literal Tailwind classes. They must stay
-literal strings — Tailwind cannot see classes built at runtime, and `group-hover:` variants
-are skipped when the `group` marker class is not in the same file.
-
----
-
-## 11. The remaining sections
-
-- **Product preview** (`ProductPreviewSection.tsx`) — a real `role="tablist"` with three
-  tabs (multi-model chat, webpage summarizer, text explainer). Each tab renders a
-  CSS-drawn window inside `AnimatePresence`, with the active pill animated by `layoutId`.
-  The tab strip scrolls horizontally on narrow screens.
-- **Why EchoGPT** (`WhyChooseSection.tsx`) — four numbered differentiators in a
-  hairline-divided grid, revealed with the shared stagger variants.
-- **Pricing** (`PricingSection.tsx`) — three plans from `src/lib/pricing.ts` with a
-  monthly/yearly toggle that animates the pill with `layoutId`. The Free plan is
-  highlighted on the middle card with a "Most popular" badge.
-- **FAQ** (`FAQSection.tsx`) — accordion with `aria-expanded` / `aria-controls`, an
-  animated plus/cross and `AnimatePresence` height transitions. One item open at a time.
-- **Testimonials** (`TestimonialsSection.tsx`) — quote cards with star ratings and
-  gradient initial avatars.
-- **Footer** (`Footer.tsx`) — logo, tagline, Product and Models link columns, a pricing
-  CTA and a copyright bar. Every link is an in-page anchor, so nothing 404s.
-
-`SectionHeading` and `SectionDivider` are shared by all of the above, and
-`useRevealVariants()` (in `src/lib/motion.ts`) provides the scroll-triggered stagger with
-an opacity-only variant under `prefers-reduced-motion`.
-
----
-
-## 12. Known issues / next steps
-
-- **Placeholder content that must be replaced before launch**: plan prices
-  (`src/lib/pricing.ts`), testimonials (`src/lib/testimonials.ts`), the Chrome Web Store
-  URL (`CHROME_STORE_URL`), and the `layout.tsx` description.
-- **No real routes yet**: the navbar, hero CTAs, pricing buttons and footer all use
-  in-page anchors. Create `src/app/chat` (and any other real pages) and switch the
-  "Get Started" links from `/#pricing` to those routes when they exist.
-- The tab strip in the product preview and the stats ticker rely on JS-driven animation;
-  the `motion-reveal` class plus the `@media (scripting: none)` rule in
-  `src/app/globals.css` keeps their content visible when scripting is off.
-- `next lint` prompts for setup on a machine without a resolved ESLint install — run
-  `npm install` first, or set `CI=1` for non-interactive runs.
-- `next build` sometimes fails with a corrupted webpack cache (`v.hasStartTime is not a
-  function`, or worker exit code `3221225477`) after an interrupted or concurrent run.
-  Delete `.next` and rebuild; stop `next dev`/`next start` before building.
+- **Plan prices** — `src/lib/pricing.ts` (`$0 / $15 / $29` monthly, `$0 / $12 / $24` yearly)
+  are invented placeholders.
+- **Testimonials** — `src/lib/testimonials.ts` contains fictional names and quotes.
+- **Chrome extension URL** — `CHROME_STORE_URL` in `HeroSection.tsx` points at the Web
+  Store root, not a listing.
+- **Meta description** — `layout.tsx` still carries a generic description.
+- **No backend yet** — there is no `/api/chat`, no auth, and no `src/app/chat` route. The
+  product preview and chat mockup are CSS illustrations.
+- **No real routes** — navbar, hero CTAs, pricing buttons and footer all use in-page
+  anchors. When `/chat` and the other pages exist, switch the "Get Started" links from
+  `/#pricing` to them.
+- **Legal pages** — no `/privacy` or `/terms`; the footer intentionally links to nothing
+  rather than to dead routes.
